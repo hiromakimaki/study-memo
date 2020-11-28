@@ -202,17 +202,17 @@ def draw_diagram(trains, path=[]):
 def main():
     import time
     # trains = generate_sample_trains(n_stations=16, n_trains=26, train_interval=40)
-    trains = generate_sample_trains(n_stations=9)
+    trains = generate_sample_trains(n_stations=10, n_trains=18, train_interval=55)
     timetable = convert_to_timetable(trains)
     # (1) Full Search
     start_time = time.time()
-    optimal_path = find_optimal_route_by_full_search(timetable)
+    optimal_path = find_optimal_route_by_full_search(timetable, stay_minutes=30)
     end_time = time.time()
     print('full search: {} sec'.format(end_time - start_time))
     draw_diagram(trains, optimal_path)
     # (2) Bit DP
     start_time = time.time()
-    optimal_path = find_optimal_route_by_bit_dp(timetable, stay_minutes=15)  # 5 or 15
+    optimal_path = find_optimal_route_by_bit_dp(timetable, stay_minutes=30)
     end_time = time.time()
     print('bit dp: {} sec'.format(end_time - start_time))
     draw_diagram(trains, optimal_path)

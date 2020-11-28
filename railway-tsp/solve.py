@@ -1,5 +1,6 @@
 from itertools import permutations
 import matplotlib.pyplot as plt
+import time
 
 
 class Section:
@@ -200,8 +201,8 @@ def draw_diagram(trains, path=[]):
 
 
 def main():
-    import time
-    # trains = generate_sample_trains(n_stations=16, n_trains=26, train_interval=40)
+    # *** テストケース1：全探索とBit DP両方で数秒以内に解けるケース ***
+    print('*** Test case 1 ***')
     trains = generate_sample_trains(n_stations=10, n_trains=18, train_interval=55)
     timetable = convert_to_timetable(trains)
     # (1) Full Search
@@ -213,6 +214,15 @@ def main():
     # (2) Bit DP
     start_time = time.time()
     optimal_path = find_optimal_route_by_bit_dp(timetable, stay_minutes=30)
+    end_time = time.time()
+    print('bit dp: {} sec'.format(end_time - start_time))
+    draw_diagram(trains, optimal_path)
+    # *** テストケース 2：全探索だと数秒以内に解けないケース ***
+    print('*** Test case 2 ***')
+    trains = generate_sample_trains(n_stations=17, n_trains=30, train_interval=40)
+    timetable = convert_to_timetable(trains)
+    start_time = time.time()
+    optimal_path = find_optimal_route_by_bit_dp(timetable, stay_minutes=15)
     end_time = time.time()
     print('bit dp: {} sec'.format(end_time - start_time))
     draw_diagram(trains, optimal_path)

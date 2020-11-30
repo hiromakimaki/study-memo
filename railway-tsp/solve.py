@@ -184,7 +184,7 @@ def draw_diagram(trains, path=[]):
         for section in train:
             plt.plot([section.from_time, section.to_time], [section.from_station, section.to_station],
                      color='g', marker='o', markersize=3)
-        for section, next_section in zip(train[1:], train[:-1]):
+        for section, next_section in zip(train[:-1], train[1:]):
             plt.plot([section.to_time, next_section.from_time], [section.to_station, next_section.from_station],
                      color='g', marker='o', markersize=3)
     # （もしあれば）移動経路を重ねて図示

@@ -1,6 +1,7 @@
 from itertools import permutations
 import matplotlib.pyplot as plt
 import time
+from collections import defaultdict, deque
 
 
 class Section:
@@ -66,12 +67,43 @@ def convert_to_timetable(trains):
     max_time = 1 + max([section.to_time for train in trains for section in train])
     n_stations = len(set([section.to_station for train in trains for section in train]))
     timetable = [[[(max_time, max_time) for _ in range(max_time)] for _ in range(n_stations)] for _ in range(n_stations)]
+    # Step0: 次ステップの探索用に (時刻, 駅) についてのグラフ（adj）を作成
+    adj = defaultdict(list)
+    target_time_flag = [0 for _ in range(max_time)]
+    for train in trains:
+        for section in train:
+            adj[(section.from_time, section.from_station)].append((section.to_time, section.to_station))
+            target_time_flag[section.from_time] = 1
+            target_time_flag[section.to_time] = 1
+    target_times = [t for t in range(max_time) if target_time_flag[t] == 1]
+    for station in range(n_stations):
+        for from_time, to_time in zip(target_times[:-1], target_times[1:]):
+            adj[(from_time, station)].append((to_time, station))
     # Step1: 出発時刻 = 乗車時刻 のデータを登録
     for train in trains:
-        for i, first_section in enumerate(train):
-            for last_section in train[i:]:
-                timetable[first_section.from_station][last_section.to_station][first_section.from_time] = \
-                    (first_section.from_time, last_section.to_time)
+        for section in train:
+            # 他の駅への最速到着時刻をBFSで求める
+            min_to_time = [max_time for _ in range(n_stations)]
+            min_to_time[section.from_station] = section.from_time
+            que = deque([(section.from_time, section.from_station)])
+            visited = defaultdict(int)
+            visited[(section.from_time, section.from_station)] = 1
+            while len(que) > 0:
+                from_time, from_station = que.popleft()
+                for to_time, to_station in adj[(from_time, from_station)]:
+                    if visited[(to_time, to_station)] == 1:
+                        continue
+                    min_to_time[to_station] = min(to_time, min_to_time[to_station])
+                    que.append((to_time, to_station))
+                    visited[(to_time, to_station)] = 1
+            # 出発時刻 = 乗車時刻 のデータを登録
+            for to_station in range(n_stations):
+                if to_station == section.from_station:
+                    continue
+                to_time = min_to_time[to_station]
+                if to_time == max_time:
+                    continue
+                timetable[section.from_station][to_station][section.from_time] = (section.from_time, to_time)
     # Step2: 出発時刻 != 乗車時刻 のデータを登録
     #     例えば駅1→2の始発列車を考え、5:00（300）発・5:05（305）着だとする。
     #     step1では timetable[1][2][300] = (300, 305) とデータが登録される。

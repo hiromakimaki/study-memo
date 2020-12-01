@@ -52,7 +52,7 @@ def generate_sample_trains(
 
 def convert_to_timetable(trains):
     """
-    テスト用の時刻表データを生成する関数
+    列車データを時刻表データに変換する関数
 
     Args:
         trains (list of list of `Section`): 列車データ

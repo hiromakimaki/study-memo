@@ -1,4 +1,3 @@
-from itertools import permutations
 import matplotlib.pyplot as plt
 import time
 from collections import defaultdict, deque
@@ -118,41 +117,6 @@ def convert_to_timetable(trains):
     return timetable
 
 
-def find_optimal_route_by_full_search(timetable, start_station=0, stay_minutes=10):
-    """
-    全探索で最適ルートを求める関数
-
-    Args:
-        timetable (list): 時刻表データ（generate_sample_timetable で生成される形式）
-        start_station (int): 移動開始の駅（＝移動の最終目的駅）
-        stay_minutes (int): 各駅における滞在時間（分）
-
-    Returns:
-        optimal_path (list of `Section`): 最適ルート
-    """
-    n_stations = len(timetable)
-    max_time = len(timetable[0][0])
-    min_time, optimal_path = max_time, None
-    for stations in permutations([i for i in range(n_stations) if i != start_station], n_stations - 1):
-        stations = list(stations)
-        stations.append(start_station)  # 最後に start_station に戻る
-        from_station, current_time = start_station, 0
-        path = list()
-        for to_station in stations:
-            if current_time > max_time:
-                break
-            from_time, to_time = timetable[from_station][to_station][current_time]
-            path.append(Section(from_station, to_station, from_time, to_time))
-            current_time = to_time
-            if to_station != start_station:
-                current_time += stay_minutes
-            from_station = to_station
-        if min_time > current_time:
-            min_time = current_time
-            optimal_path = path
-    return optimal_path
-
-
 def find_optimal_route_by_bit_dp(timetable, start_station=0, stay_minutes=10):
     """
     bit dpで最適ルートを求める関数
@@ -233,30 +197,23 @@ def draw_diagram(trains, path=[]):
 
 
 def main():
-    # *** テストケース1：全探索とBit DP両方で数秒以内に解けるケース ***
+    # *** テストケース1：人工のケース（小さめのテストケース） ***
     print('*** Test case 1 ***')
     trains = generate_sample_trains(n_stations=10, n_trains=18, train_interval=55)
     timetable = convert_to_timetable(trains)
-    # (1) Full Search
-    start_time = time.time()
-    optimal_path = find_optimal_route_by_full_search(timetable, stay_minutes=30)
-    end_time = time.time()
-    print('full search: {} sec'.format(end_time - start_time))
-    draw_diagram(trains, optimal_path)
-    # (2) Bit DP
     start_time = time.time()
     optimal_path = find_optimal_route_by_bit_dp(timetable, stay_minutes=30)
     end_time = time.time()
-    print('bit dp: {} sec'.format(end_time - start_time))
+    print('search time: {} sec'.format(end_time - start_time))
     draw_diagram(trains, optimal_path)
-    # *** テストケース 2：全探索だと数秒以内に解けないケース ***
+    # *** テストケース 2：人工のケース（やや大きめのテストケース） ***
     print('*** Test case 2 ***')
     trains = generate_sample_trains(n_stations=17, n_trains=30, train_interval=40)
     timetable = convert_to_timetable(trains)
     start_time = time.time()
     optimal_path = find_optimal_route_by_bit_dp(timetable, stay_minutes=15)
     end_time = time.time()
-    print('bit dp: {} sec'.format(end_time - start_time))
+    print('search time: {} sec'.format(end_time - start_time))
     draw_diagram(trains, optimal_path)
     # *** テストケース 3：実例（わたらせ渓谷鉄道、桐生から出発して桐生に戻る） ***
     print('*** Test case 3 ***')
@@ -265,7 +222,7 @@ def main():
     start_time = time.time()
     optimal_path = find_optimal_route_by_bit_dp(timetable, stay_minutes=15)
     end_time = time.time()
-    print('bit dp: {} sec'.format(end_time - start_time))
+    print('search time: {} sec'.format(end_time - start_time))
     draw_diagram(trains, optimal_path)
 
 
